@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class NettyServer {
 
     // 从 application.properties/yml 获取端口，默认 8080
-    @Value("${netty.port:8080}")
+    @Value("${netty.port:8090}")
     private int port;
 
     // 注入自定义的业务处理器（处理解码后的 JT808 对象）

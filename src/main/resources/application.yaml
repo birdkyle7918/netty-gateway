@@ -11,3 +11,6 @@ spring:
     consumer:
       group-id: netty-gateway-group
       auto-offset-reset: earliest
+
+server:
+  port: 8080
