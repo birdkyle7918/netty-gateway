@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: netty-gateway
+
+  kafka:
+    bootstrap-servers: 38.147.176.216:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
