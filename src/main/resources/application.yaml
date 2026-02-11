@@ -14,7 +14,7 @@ spring:
 
   datasource:
     # 注意：在 Docker 网络中，主机名使用 clickhouse
-    url: jdbc:clickhouse://clickhouse:8123/default
+    url: jdbc:ch://clickhouse:8123/default?compress=false&buffer_size=65536&socket_timeout=30000
     driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
     username: default
     password: ${CLICKHOUSE_PASSWORD}
