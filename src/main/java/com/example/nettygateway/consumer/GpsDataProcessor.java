@@ -83,6 +83,6 @@ public class GpsDataProcessor {
             ps.setDouble(4, data.getLatitude());
         });
 
-        log.info(">>> [ClickHouse] 成功批量写入 " + drainList.size() + " 条轨迹数据");
+        log.info(">>> [ClickHouse] 成功批量写入 {} 条轨迹数据", drainList.size());
     }
 }
