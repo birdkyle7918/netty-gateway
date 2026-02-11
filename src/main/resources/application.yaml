@@ -12,5 +12,14 @@ spring:
       group-id: netty-gateway-group
       auto-offset-reset: earliest
 
+  datasource:
+    # 注意：在 Docker 网络中，主机名使用 clickhouse
+    url: jdbc:clickhouse://clickhouse:8123/default
+    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+    username: default
+    password: ${CLICKHOUSE_PASSWORD}
+    hikari:
+      maximum-pool-size: 5 # ClickHouse 不需要太多连接，攒批写入 5 个足矣
+
 server:
   port: 8080

@@ -1,4 +1,4 @@
-package com.example.nettygateway.dto;
+package com.example.nettygateway.gateway.dto;
 
 import lombok.Data;
 

@@ -1,7 +1,7 @@
 package com.example.nettygateway.util;
 
 
-import com.example.nettygateway.dto.VehicleLocation;
+import com.example.nettygateway.gateway.dto.VehicleLocation;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

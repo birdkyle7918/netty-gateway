@@ -23,4 +23,4 @@ EXPOSE 8080 8081
 
 # 启动命令
 # 建议加上 -XX:+UseG1GC (JDK 21 默认即是) 和容器感知参数
-ENTRYPOINT ["java", "-Xmx2g", "-Xms2g", "-XX:+UseContainerSupport", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx3g", "-Xms3g", "-XX:+UseContainerSupport", "-jar", "app.jar"]

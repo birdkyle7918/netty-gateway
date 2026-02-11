@@ -1,6 +1,6 @@
-package com.example.nettygateway.server;
+package com.example.nettygateway.gateway.server;
 
-import com.example.nettygateway.handler.Jt808BusinessHandler;
+import com.example.nettygateway.gateway.handler.Jt808BusinessHandler;
 import com.example.nettygateway.util.Jt808Decoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;

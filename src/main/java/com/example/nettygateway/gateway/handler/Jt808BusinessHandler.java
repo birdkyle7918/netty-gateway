@@ -1,6 +1,6 @@
-package com.example.nettygateway.handler;
+package com.example.nettygateway.gateway.handler;
 
-import com.example.nettygateway.dto.VehicleLocation;
+import com.example.nettygateway.gateway.dto.VehicleLocation;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
