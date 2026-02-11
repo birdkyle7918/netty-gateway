@@ -33,7 +33,13 @@ public class GpsDataProcessor {
     // 1. 监听 Kafka 消息，存入缓冲区
     @KafkaListener(topics = "vehicle_gps", groupId = "gps_group")
     public void listen(String message) {
-        VehicleLocation data = JSON.parseObject(message, VehicleLocation.class);
+        VehicleLocation data;
+        try {
+            data = JSON.parseObject(message, VehicleLocation.class);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return;
+        }
 
         // 尝试将数据放入队列
         boolean success = buffer.offer(data);
