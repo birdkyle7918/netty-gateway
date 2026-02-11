@@ -1,20 +1,26 @@
 # 第一阶段：编译 (使用 Maven + JDK 21)
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
 WORKDIR /app
-# 复制 pom.xml 和源码
+
+# 利用 Docker 层缓存：先只复制 pom.xml 下载依赖
 COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# 复制源码并编译
 COPY src ./src
-# 执行编译打包，跳过测试
 RUN mvn clean package -DskipTests
 
 # 第二阶段：运行 (仅需 JRE)
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-# 从编译阶段拷贝 jar 包
-COPY --from:build /app/target/*.jar app.jar/
 
-# 暴露端口：8080 (Netty TCP), 8081 (Spring Boot HTTP)
+# 修正语法错误：--from=build，且目标文件名不要带斜杠
+# 建议：如果 target 目录下有多个 jar（如 sources-jar），请指定具体的 jar 名称
+COPY --from=build /app/target/*.jar app.jar
+
+# 暴露端口
 EXPOSE 8080 8081
 
-# 启动命令：优化内存配置，适合 8GB 内存的机器
-ENTRYPOINT ["java", "-Xmx2g", "-Xms2g", "-jar", "app.jar"]
+# 启动命令
+# 建议加上 -XX:+UseG1GC (JDK 21 默认即是) 和容器感知参数
+ENTRYPOINT ["java", "-Xmx2g", "-Xms2g", "-XX:+UseContainerSupport", "-jar", "app.jar"]
