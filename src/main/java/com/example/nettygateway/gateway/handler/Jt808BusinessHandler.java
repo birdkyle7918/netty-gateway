@@ -1,5 +1,6 @@
 package com.example.nettygateway.gateway.handler;
 
+import com.alibaba.fastjson2.JSON;
 import com.example.nettygateway.gateway.dto.VehicleLocation;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,13 +26,13 @@ public class Jt808BusinessHandler extends SimpleChannelInboundHandler<VehicleLoc
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, VehicleLocation msg) {
         try {
-            log.info(">>> [网关] 收到车辆数据: {}", msg.toString());
+            log.info(">>> [网关] 收到车辆数据: {}", JSON.toJSONString(msg));
 
             // 发送到 Kafka
             // Topic: vehicle_gps
             // Key: deviceId (保证同一辆车的数据进入同一个分区，保证顺序)
             // Value: JSON String (这里为了简单直接用了 toString)
-            kafkaTemplate.send("vehicle_gps", msg.getDeviceId(), msg.toString());
+            kafkaTemplate.send("vehicle_gps", msg.getDeviceId(), JSON.toJSONString(msg));
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
