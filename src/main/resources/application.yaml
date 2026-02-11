@@ -3,8 +3,11 @@ spring:
     name: netty-gateway
 
   kafka:
-    bootstrap-servers: 38.147.176.216:9092
+    # 注意：在 Docker 网络内部，直接使用服务名和内部端口
+    bootstrap-servers: kafka:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      retries: 3
+    consumer:
+      group-id: netty-gateway-group
+      auto-offset-reset: earliest
