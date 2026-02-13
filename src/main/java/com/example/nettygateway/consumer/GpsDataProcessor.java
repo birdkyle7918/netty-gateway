@@ -25,7 +25,7 @@ public class GpsDataProcessor {
     private final BlockingQueue<VehicleLocation> buffer = new LinkedBlockingQueue<>();
 
     // 阈值配置
-    private static final int BATCH_SIZE = 2000;
+    private static final int BATCH_SIZE = 50000;
 
     public GpsDataProcessor(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
