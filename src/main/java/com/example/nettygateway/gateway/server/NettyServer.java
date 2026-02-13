@@ -61,7 +61,7 @@ public class NettyServer {
                 ServerBootstrap b = new ServerBootstrap();
                 b.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class) // 指定 NIO 传输模式
-                        .option(ChannelOption.SO_BACKLOG, 1024) // 设置全连接队列大小
+                        .option(ChannelOption.SO_BACKLOG, 10240) // 设置全连接队列大小
                         .childOption(ChannelOption.SO_KEEPALIVE, true) // 开启 TCP 心跳探测
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
