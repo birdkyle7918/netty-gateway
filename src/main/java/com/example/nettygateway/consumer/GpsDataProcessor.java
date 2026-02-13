@@ -2,6 +2,7 @@ package com.example.nettygateway.consumer;
 
 import com.alibaba.fastjson2.JSON;
 import com.example.nettygateway.gateway.dto.VehicleLocation;
+import com.example.nettygateway.gateway.server.NettyServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -90,5 +91,11 @@ public class GpsDataProcessor {
         });
 
         log.info(">>> [ClickHouse] 成功批量写入 {} 条轨迹数据", drainList.size());
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void debugConnections() {
+        // 假设你把所有连接存到了 NettyServer.allChannels 里
+        System.out.println(">>> 内存中真实连接数: " + NettyServer.allChannels.size());
     }
 }

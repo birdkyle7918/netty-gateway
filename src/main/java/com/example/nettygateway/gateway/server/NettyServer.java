@@ -5,10 +5,13 @@ import com.example.nettygateway.util.Jt808Decoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class NettyServer {
+
+    // allChannels，它是全局唯一的
+    public static final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     // 从 application.properties/yml 获取端口，默认 8080
     @Value("${netty.port:8090}")
@@ -68,6 +74,17 @@ public class NettyServer {
                             protected void initChannel(SocketChannel ch) {
                                 // 获取该连接的流水线
                                 ChannelPipeline p = ch.pipeline();
+
+                                // 增加这一段：监听连接状态
+                                p.addLast(new ChannelInboundHandlerAdapter() {
+                                    @Override
+                                    public void channelActive(ChannelHandlerContext ctx) {
+                                        // 当连接激活（建立成功）时，加入点名册
+                                        NettyServer.allChannels.add(ctx.channel());
+                                        // 继续把事件往后传给你的解码器
+                                        ctx.fireChannelActive();
+                                    }
+                                });
 
                                 // 1. 解决粘包/半包：JT/808 协议以 0x7e 开头和结尾
                                 // 这里使用 DelimiterBasedFrameDecoder 按照 0x7e 进行切割
