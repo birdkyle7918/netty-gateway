@@ -101,18 +101,7 @@ public class NettyServer {
                                 // 3. 业务处理器：处理登录、心跳、位置上报等具体业务
                                 p.addLast(businessHandler);
 
-                                // 在 NettyServer 的 initChannel 中
-                                p.addLast(new IdleStateHandler(60, 0, 0, TimeUnit.SECONDS)); // 60秒没收到读事件就触发
-                                p.addLast(new ChannelInboundHandlerAdapter() {
-                                    @Override
-                                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-                                        if (evt instanceof IdleStateEvent) {
-                                            // 发现僵尸连接，主动关闭
-                                            System.out.println(">>> [清理] 发现长时间不说话的僵尸连接，强制关闭: " + ctx.channel().id());
-                                            ctx.close();
-                                        }
-                                    }
-                                });
+
                             }
                         });
 
