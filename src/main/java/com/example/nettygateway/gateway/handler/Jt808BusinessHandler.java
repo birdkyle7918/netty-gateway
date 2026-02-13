@@ -26,7 +26,7 @@ public class Jt808BusinessHandler extends SimpleChannelInboundHandler<VehicleLoc
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, VehicleLocation msg) {
         try {
-            log.info(">>> [网关] 收到车辆数据: {}", JSON.toJSONString(msg));
+//            log.info(">>> [网关] 收到车辆数据: {}", JSON.toJSONString(msg));
 
             // 发送到 Kafka
             // Topic: vehicle_gps
