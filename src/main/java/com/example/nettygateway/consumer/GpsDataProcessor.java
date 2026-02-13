@@ -90,7 +90,7 @@ public class GpsDataProcessor {
             ps.setDouble(4, data.getLatitude());
         });
 
-        log.info(">>> [ClickHouse] 成功批量写入 {} 条轨迹数据", drainList.size());
+//        log.info(">>> [ClickHouse] 成功批量写入 {} 条轨迹数据", drainList.size());
     }
 
     @Scheduled(fixedRate = 1000)
