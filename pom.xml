@@ -103,9 +103,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>com.example.nettygateway.simulator.Jt808Simulator</mainClass>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <mainClass>com.example.nettygateway.simulator.Jt808Simulator</mainClass>-->
+<!--                </configuration>-->
             </plugin>
         </plugins>
     </build>
