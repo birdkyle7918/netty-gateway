@@ -3,6 +3,7 @@ package com.example.nettygateway.gateway.server;
 import com.example.nettygateway.gateway.handler.Jt808BusinessHandler;
 import com.example.nettygateway.util.Jt808Decoder;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
@@ -105,11 +106,36 @@ public class NettyServer {
                                 p.addLast(new DelimiterBasedFrameDecoder(1024,
                                         Unpooled.copiedBuffer(new byte[]{0x7e})));
 
+
+                                // 2. 【核心修复】增加一个 Empty Filter
+                                p.addLast(new ChannelInboundHandlerAdapter() {
+                                    @Override
+                                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                        ByteBuf buf = (ByteBuf) msg;
+
+                                        // 如果是 0 字节的空包（由 7E 7E 产生），直接丢弃，不传给后面，也不计数
+                                        if (buf.readableBytes() == 0) {
+                                            buf.release(); // 释放内存，防止泄露
+                                            return;        // 拦截
+                                        }
+
+                                        // 只有非空包才往下传
+                                        ctx.fireChannelRead(msg);
+                                    }
+                                });
+
                                 // --- 【新增 4】流量统计 Handler (必须放在拆包器之后) ---
                                 // 放在这里统计的才是“完整的一个包”，而不是 TCP 碎片
                                 p.addLast(new ChannelInboundHandlerAdapter() {
                                     @Override
                                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                        ByteBuf buf = (ByteBuf) msg;
+                                        // --- 诊断代码 ---
+                                        if (buf.readableBytes() == 0) {
+                                            log.warn("发现幽灵空包！这是导致 QPS 虚高的凶手！");
+                                        }
+                                        // ----------------
+
                                         // 计数器 +1
                                         totalMessageCount.increment();
                                         // 继续传递给下一个 Handler
