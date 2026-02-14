@@ -20,7 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Netty 服务端实现类
@@ -32,6 +35,10 @@ public class NettyServer {
 
     // allChannels，它是全局唯一的
     public static final ChannelGroup allChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+    public static final LongAdder totalMessageCount = new LongAdder();
+
+    private final ScheduledExecutorService monitorExecutor = Executors.newSingleThreadScheduledExecutor();
 
     // 从 application.properties/yml 获取端口，默认 8080
     @Value("${netty.port:8090}")
@@ -60,6 +67,9 @@ public class NettyServer {
      */
     @PostConstruct
     public void start() {
+
+        startMonitorTask();
+
         new Thread(() -> {
             // --- 4.2.x 新写法：使用 MultiThreadIoEventLoopGroup 配合 NioIoHandler 工厂 ---
             // 这种方式是 Netty 4.2 推荐的，旨在提供更灵活的 IO 事件处理
@@ -95,6 +105,18 @@ public class NettyServer {
                                 p.addLast(new DelimiterBasedFrameDecoder(1024,
                                         Unpooled.copiedBuffer(new byte[]{0x7e})));
 
+                                // --- 【新增 4】流量统计 Handler (必须放在拆包器之后) ---
+                                // 放在这里统计的才是“完整的一个包”，而不是 TCP 碎片
+                                p.addLast(new ChannelInboundHandlerAdapter() {
+                                    @Override
+                                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                        // 计数器 +1
+                                        totalMessageCount.increment();
+                                        // 继续传递给下一个 Handler
+                                        ctx.fireChannelRead(msg);
+                                    }
+                                });
+
                                 // 2. 协议解码器：将原始字节流（ByteBuf）转换为 JT808Message 实体类
                                 p.addLast(new Jt808Decoder());
 
@@ -120,6 +142,35 @@ public class NettyServer {
                 stop(); // 异常或关闭时执行清理
             }
         }).start();
+    }
+
+    /**
+     * 【新增 5】监控逻辑具体实现
+     */
+    private void startMonitorTask() {
+        monitorExecutor.scheduleAtFixedRate(new Runnable() {
+            private long lastTotalCount = 0;
+
+            @Override
+            public void run() {
+                try {
+                    // 获取当前总数
+                    long currentTotalCount = totalMessageCount.sum();
+                    // 计算这一秒内的增量 (即 QPS)
+                    long qps = currentTotalCount - lastTotalCount;
+                    // 更新上次的总数
+                    lastTotalCount = currentTotalCount;
+
+                    // 只有当有流量时才打印，或者一直打印以便观察心跳
+                    if (qps > 0 || !allChannels.isEmpty()) {
+                        log.info(">>> [监控] 当前连接数: {}, 实时 QPS: {} msg/s, 累计接收: {}",
+                                allChannels.size(), qps, currentTotalCount);
+                    }
+                } catch (Exception e) {
+                    log.error("监控线程异常", e);
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS); // 初始延迟1秒，每隔1秒执行一次
     }
 
     /**
