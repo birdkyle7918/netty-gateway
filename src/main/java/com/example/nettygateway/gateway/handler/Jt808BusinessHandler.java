@@ -16,6 +16,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
+/**
+ * Jt808BusinessHandler
+ * <p>
+ * 该类是一个 Netty 的业务处理器（SimpleChannelInboundHandler<VehicleLocation>），主要职责：
+ * - 接收 VehicleLocation 类型的业务消息（来自 JT808 协议解码后的数据）；
+ * - 将消息序列化为 JSON 字符串；
+ * - 异步发送到 Kafka（topic: "vehicle_gps"，使用 deviceId 作为 key），不阻塞 Netty IO 线程；
+ * - 使用高性能的 LongAdder 统计“尝试发送”的次数，并在 @PostConstruct 启动的定时任务中每秒打印一次 QPS（写入速率）；
+ * - 可复用（@ChannelHandler.Sharable）且为 Spring 管理的组件（@Component），包含基本的异常处理与日志记录。
+ * <p>
+ * 设计要点：
+ * - 保持发送路径为异步，以免阻塞 Netty 事件循环；
+ * - 计数器采用 LongAdder，避免在高并发下的竞争；
+ * - 监控通过单独的调度线程定期输出，不影响主处理逻辑。
+ */
 @Component
 @ChannelHandler.Sharable
 @Slf4j
